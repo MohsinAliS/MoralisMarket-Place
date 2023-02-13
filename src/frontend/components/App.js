@@ -60,7 +60,6 @@ function App() {
       const accounts = await ethereum.request({ method: "eth_accounts" });
       if (accounts.length) {
         setAccount(accounts[0]);
-        console.log("Account", accounts[0])
         // Get provider from Metamask
         const provider = new ethers.providers.Web3Provider(window.ethereum)
         // Set signer
@@ -127,7 +126,7 @@ function App() {
           ) : (
             <Routes>
               <Route path="/" element={
-                <Home marketplace={marketplace} nft={nft} account={account} />
+                <Home signers={signer} marketplace={marketplace} nft={nft} account={account} />
               } />
               <Route path="/create" element={
                 <Create marketplace={marketplace} nft={nft} />

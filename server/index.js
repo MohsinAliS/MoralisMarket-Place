@@ -14,12 +14,12 @@ const MORALIS_API_KEY = process.env.MORALIS_API_KEY;
 app.get("/getnfts", async (req, res) => {
   try {
     const { query } = req;
-   console.log("response1")
+  
     const response = await Moralis.EvmApi.nft.getWalletNFTs({
       address: query.account,
       chain: query.chainId,
     });
-    console.log("response2")
+   
 
     return res.status(200).json(response);
   } catch (e) {

@@ -30,7 +30,6 @@ const NftBox = ({ item, idx, marketplace, account, loading, setLoading }) => {
     try {
       let bid = await marketplace.getHighestBid(item.itemId);
       setbid(ethers.utils.formatEther(bid))
-      console.log("this is bid", bid.toString());
     } catch (error) {
       console.log(error);
     }
@@ -40,7 +39,6 @@ const NftBox = ({ item, idx, marketplace, account, loading, setLoading }) => {
     try {
       let bidder = await marketplace.getHighestBidder(item.itemId);
       setbidder(bidder)
-      console.log("this is bid", bidder.toString());
     } catch (error) {
       console.log(error);
     }
@@ -91,7 +89,6 @@ const NftBox = ({ item, idx, marketplace, account, loading, setLoading }) => {
   const buyMarketItem = async (item) => {
     try {
       setLoading(true)
-      console.log("this is item id ", item.itemId.toString())
       await (await marketplace.purchaseItem(item.itemId.toString(), { value: item.totalPrice })).wait()
       setLoading(false);
       navigate('/my-purchases')
@@ -126,7 +123,6 @@ const NftBox = ({ item, idx, marketplace, account, loading, setLoading }) => {
     getHigestBid();
     getHigestBidder();
   },[bidder,bid]);
-
 
   return (
     <>

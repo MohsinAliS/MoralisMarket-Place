@@ -27,25 +27,18 @@ export default function MyPurchases({ marketplace, NFTAbi,signers, account }) {
   const getChainId = () => {
     const id = Number(window.ethereum.chainId)
     setChainId(id)
-    console.log("chain id is ",id);
   }
 
       // /////////////////moralis////////
       const GetData = async () => {
         try {
             const chainId = "0x5";
-          //  console.log("hi is ",chainId)
-          // console.log("+++++++",await axios.get(`http://localhost:5000/getnfts`, {
-          //     params: {account,chainId},
-          //   }))
            const response = await axios.get(`http://localhost:5000/getnfts`, {
               params: {account,chainId},
             })
             .then((response) => {
-              setNfts(response.data.result);
-            // console.log("return",response.data.result);
+              setNfts(response.data.result); 
         });
-          //   console.log("this is after", response)
         
         }
          catch (e) {
@@ -60,7 +53,6 @@ export default function MyPurchases({ marketplace, NFTAbi,signers, account }) {
       const getbid = await marketplace.getPendingReturns(account);
       if (getbid > 0) {
         setBid(false);
-        console.log("this is bid ", getbid.toString())
       }
     } catch (error) {
       console.log(error)
@@ -92,13 +84,10 @@ export default function MyPurchases({ marketplace, NFTAbi,signers, account }) {
   }, [account])
 
   useEffect(() => {
-    console.log("purchases ", nfts);
-    console.log("purchases ", purchases);
   },[nfts])
 
 
   if (chainId == 5) {
-    console.log("if chain id ", chainId)
     if (loading) return (
       <main style={{ padding: "1rem 0" }}>
         <h2>Loading...</h2>
@@ -120,9 +109,9 @@ return (
           <Row xs={1} md={2} lg={3} className="g-4 py-5">
             {nfts.map((item,idx) => (
 
-          <MintedBox item={item} idx={idx} loading={load} NFTAbi={NFTAbi} signers={signers} marketplace={marketplace} account={account} />
 
-            ))}
+      <MintedBox item={item} idx={idx} loading={load} NFTAbi={NFTAbi} signers={signers} marketplace={marketplace} account={account} />
+      ))}
 
           </Row>
 

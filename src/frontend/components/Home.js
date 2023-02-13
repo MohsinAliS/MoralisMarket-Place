@@ -1,5 +1,7 @@
+import { ethers } from 'ethers';
 import { useState, useEffect } from 'react'
 import { Row } from 'react-bootstrap'
+import NFTAbi from '../contractsData/NFT.json'
 import NftBox from './NftBox';
 
 
@@ -20,22 +22,27 @@ const Home = ({ marketplace, nft, account }) => {
       // Load all unsold items
       const itemCount = await marketplace.itemCount()
       let items = []
-      for (let i = 1; i <= itemCount; i++) {
+      for (let i = 1; i <=itemCount; i++) { 
         const item = await marketplace.items(i)
         if (!item.sold) {
           const auction = await marketplace.isAuction(item.tokenId.toString())
-          console.log("this is nft ", auction)
           const time = await marketplace.getLastTime(item.itemId.toString())
           const temp = Number(time.toString())
           // get uri url from nft contract
+          const provider = new ethers.providers.Web3Provider(window.ethereum)
+          // Set signer
+          const signer = provider.getSigner()
+          const nft = new ethers.Contract(item.nft, NFTAbi.abi,signer)
           const uri = await nft.tokenURI(item.tokenId)
-          // use uri to fetch the nft metadata stored on ipfs
-          const response = await fetch(uri)
-          const metadata = await response.json()
-          // get total price of item (item price + fee)
-          //get Royality fees in %%%%%%%%%%
-          const royality = await nft.getRoyalityFees(item.tokenId);
-          const res = Number(royality.toString()) / 100;
+          if(uri.slice(uri.length - 4) == "json") {
+           
+            const response = await fetch(uri)
+            const metadata = await response.json()
+          
+          const res = Number(50);
+          console.log("json",metadata.image)
+          // const img =  `https://ipfs.io/ipfs/${metadata.image.slice(metadata.image.length - 46)}`
+          // console.log("img",img)
           items.push({
             time: temp,
             auction: auction,
@@ -44,14 +51,45 @@ const Home = ({ marketplace, nft, account }) => {
             seller: item.seller,
             name: metadata.name,
             description: metadata.description,
-            image: metadata.image,
+            image:metadata.image,
             Royality: res
-
           })
+
+          }else {
+       
+          // use uri to fetch the nft metadata stored on ipfs
+          // uri.Replace.to("https://gateway.pinata.cloud/ipfs/"+uri)
+        
+          const link =  `https://ipfs.io/ipfs/${uri.slice(uri.length - 46)}`;
+        
+          const response = await fetch(link)
+            
+          const metadata = await response.json()
+      
+  
+          const res = Number(50);
+          console.log("withoutjson",metadata.image)
+          // const img =  `https://ipfs.io/ipfs/${metadata.image.slice(metadata.image.length - 46)}`
+          // console.log("img",img)
+          items.push({
+            time: temp,
+            auction: auction,
+            totalPrice: item.price,
+            itemId: item.itemId,
+            seller: item.seller,
+            name: metadata.name,
+            description: metadata.description,
+            image:metadata.image,
+            Royality: res
+          })
+
+          }
+        
         }
+      
       }
-      setLoading(false)
       setItems(items)
+      setLoading(false)
     } catch (error) {
       console.log(error);
     }
@@ -73,7 +111,7 @@ const Home = ({ marketplace, nft, account }) => {
 if(chainId == 5) {
   if (loading) return (
     <main style={{ padding: "1rem 0" }}>
-      <h2>Loading...</h2>
+      <h2>Loadings...</h2>
     </main>
   )
 }
@@ -81,8 +119,8 @@ if(chainId == 5) {
   return (
     <div className="flex justify-center">
      {( 
-       chainId == "31337"
-      // chainId == "5"
+      //  chainId == "31337"
+      chainId == "5"
       ?
       <div>
       {items.length > 0 ?

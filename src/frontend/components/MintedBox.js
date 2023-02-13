@@ -32,10 +32,8 @@ const MintedBox = ({ item, idx,NFTAbi,signers, marketplace, account}) => {
         try {
           setLoad(true);
           await (await msgSender.setApprovalForAll(marketplace.address,true)).wait()
-          console.log("111111111111111",nftId)
             const listingPrice = ethers.utils.parseEther(price)
-            const nftId = item.token_id.toString();
-            await (await marketplace.makeItem(item.token_address, nftId, listingPrice)).wait()
+            await (await marketplace.makeItem(item.token_address, item.token_id , listingPrice)).wait()
             setmodal(false);
             setLoad(false);
             window.location.reload()
@@ -76,7 +74,6 @@ const MintedBox = ({ item, idx,NFTAbi,signers, marketplace, account}) => {
       const response = await fetch(item.token_uri)
       const metadata = await response.json()
       const temp= await metadata.image;
-      console.log("temp",temp);
       setMetadata(temp);
     }
 
@@ -89,10 +86,6 @@ return (
         <div>              
         <Col key={idx} className="overflow-hidden">
         <Card>
-          {
-           
-            console.log("++++++++++++++++++++++",metadata)
-          }
             <Card.Img variant="top" src={metadata} />
             <Card.Body color="secondary">
             <Card.Title>{item.name}</Card.Title>
@@ -145,7 +138,7 @@ return (
                         onChange={getData}></input>
                     </div>
                     <div>
-                      <Button onClick={() => SellItem(marketplace)} style={{ marginLeft: "200px", marginTop: "10px" }} disabled={load}> Submit </Button>
+                      <Button onClick={() => SellItem(item)} style={{ marginLeft: "200px", marginTop: "10px" }} disabled={load}> Submit </Button>
                     </div>
                   </Row>
                 </Form>
