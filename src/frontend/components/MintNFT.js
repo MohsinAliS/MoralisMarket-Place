@@ -78,7 +78,7 @@ const Create = ({ nft }) => {
     try {
       setLoading(true)
  
-      await (await nft.mint(result.pinataURL,royality)).wait()
+      await (await nft.mint(result.pinataURL,1000)).wait()
 
     } catch (error) {
       setLoading(false)
@@ -109,7 +109,7 @@ const Create = ({ nft }) => {
               />
               <Form.Control onChange={(e) => setName(e.target.value)} size="lg" value={name} required type="text" placeholder="Name" disabled = {loading} />
               <Form.Control onChange={(e) => setDescription(e.target.value)} size="lg" value={description} required as="textarea" placeholder="Description" disabled = {loading} />
-              <Form.Control onChange={(e) => setRoyality(e.target.value)} size="lg" required type="number" value={royality} placeholder="Royality Fees in %" disabled = {loading} />
+              {/* <Form.Control onChange={(e) => setRoyality(e.target.value)} size="lg" required type="number" value={royality} placeholder="Royality Fees in %" disabled = {loading} /> */}
               <div className="d-grid px-0">
                 <Button onClick={createNFT} disabled = {loading} variant="primary" size="lg">
                   Create & List NFT!

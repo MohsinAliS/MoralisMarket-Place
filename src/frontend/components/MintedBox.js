@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Modal, ModalHeader, Form, ModalBody } from "reactstrap"
 import { Row, Col, Card, Button } from 'react-bootstrap'
 import Countdown from 'react-countdown'
@@ -18,6 +18,8 @@ const MintedBox = ({ item, idx,NFTAbi,signers, marketplace, account}) => {
     const [Auction, setAuction] = useState(false)
     const [chainId,setChainId] = useState()
     const [msgSender,Setsender]=useState();
+    const [Royality, setRoyality]=useState(null)
+    const myForm = useRef()
     
     
     const navigate = useNavigate();
@@ -29,11 +31,15 @@ const MintedBox = ({ item, idx,NFTAbi,signers, marketplace, account}) => {
     }
     
     const SellItem = async (item) => {
+      if(!myForm.current.checkValidity())
+      {
+        return
+      }
         try {
           setLoad(true);
           await (await msgSender.setApprovalForAll(marketplace.address,true)).wait()
             const listingPrice = ethers.utils.parseEther(price)
-            await (await marketplace.makeItem(item.token_address, item.token_id , listingPrice)).wait()
+            await (await marketplace.makeItem(item.token_address, item.token_id , listingPrice, Royality)).wait()
             setmodal(false);
             setLoad(false);
             window.location.reload()
@@ -45,21 +51,29 @@ const MintedBox = ({ item, idx,NFTAbi,signers, marketplace, account}) => {
     }
 
 
-    function getData(val) {
+      function getData(val) {
         setPrice(val.target.value)
       }
       function getTime(val) {
         setTime(val.target.value)
       }
 
+      function getRoyality(val) {
+        setRoyality(val.target.value)
+      }
+
     const createAuction = async (item) => {
+      if(!myForm.current.checkValidity())
+      {
+        return
+      }
         try {
             setLoad(true);
             await (await msgSender.setApprovalForAll(marketplace.address, true)).wait()
             const listingPrice = ethers.utils.parseEther(price)
             const nftId = item.token_id.toString();
             const auctionTime = Time;
-            await (await marketplace.createAuction(item.token_address, nftId, listingPrice, auctionTime)).wait()
+            await (await marketplace.createAuction(item.token_address, nftId, listingPrice,Royality,auctionTime)).wait()
             setAuction(false)
             setmodal(false);
             setLoad(false);
@@ -128,20 +142,30 @@ return (
                 Set Price
               </ModalHeader>
               <ModalBody>
-                <Form >
+                <form ref={myForm}>
                   <Row>
                     <div>
                       <input
-                        required type="number"
+                        type="number" step="any"
                         className='form-control'
                         placeholder='Enter Price'
-                        onChange={getData}></input>
+                        onChange={getData} required></input>
+                    </div>
+                      
+                     <div style={{ marginTop: "10px" }}>
+                      <input
+                        min="100"
+                        max="1000"
+                        type="number" step="any"
+                        className='form-control'
+                        placeholder='Enter Royality'
+                        onChange={getRoyality} required></input>
                     </div>
                     <div>
-                      <Button onClick={() => SellItem(item)} style={{ marginLeft: "200px", marginTop: "10px" }} disabled={load}> Submit </Button>
+                      <Button onClick={() => SellItem(item)} style={{ marginLeft: "200px", marginTop: "10px" }} disabled={load} type="submit"> Submit </Button>
                     </div>
                   </Row>
-                </Form>
+                </form>
               </ModalBody>
             </Modal>
           </div>
@@ -155,28 +179,41 @@ return (
                 Set Auction
               </ModalHeader>
               <ModalBody>
-                <Form >
+                <form ref={myForm}>
                   <Row>
                     <div>
                       <input
-                        required type="number"
+                        required 
+                        type="number" step="any"
                         className='form-control'
                         placeholder='Enter Price'
                         onChange={getData}></input>
                     </div>
 
-                    <div style={{ marginTop: "20px" }}>
+                    <div style={{ marginTop: "10px" }}>
                       <input
-                        required type="number"
+                        required 
+                        type="number" step="any"
                         className='form-control'
                         placeholder='Enter Time'
                         onChange={getTime}></input>
                     </div>
+                    
+                    <div style={{ marginTop: "10px" }}>
+                      <input
+                        required
+                        min="100"
+                        max="1000"
+                        type="number"
+                        className='form-control'
+                        placeholder='Enter Royality'
+                        onChange={getRoyality}></input>
+                    </div>
                     <div>
-                      <Button onClick={() => createAuction(item)} style={{ marginLeft: "200px", marginTop: "10px" }} disabled={load}> Submit </Button>
+                      <Button onClick={() => createAuction(item)} style={{ marginLeft: "200px", marginTop: "10px" }} disabled={load} type="submit"> Submit </Button>
                     </div>
                   </Row>
-                </Form>
+                </form>
               </ModalBody>
             </Modal>
           </div>
