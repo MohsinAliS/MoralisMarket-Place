@@ -5,53 +5,53 @@ import NFTAbi from '../contractsData/NFT.json'
 import NftBox from './NftBox';
 
 
-const Home = ({ marketplace, nft, account }) => {
+const Home = ({getnft, getmarketplace, getContracts, marketplace, nft, account }) => {
   const [loading, setLoading] = useState(true)
   const [items, setItems] = useState([])
   const [load, setLoad] = useState(false)
   const [chainId,setChainId] = useState()
 
-  
-  
-  const loadMarketplaceItems = async () => {
-  
+  useEffect((()=>{
+    getContracts();
+  }),[account])
 
-  
+  const loadMarketplaceItems = async () => {
 
     try {
       // Load all unsold items
-      const itemCount = await marketplace.itemCount()
+      const itemCount = await getmarketplace?.itemCount()
       let items = []
       for (let i = 1; i <=itemCount; i++) { 
-        const item = await marketplace.items(i)
-        if (!item.sold) {
-          const auction = await marketplace.isAuction(item.tokenId.toString())
-          const time = await marketplace.getLastTime(item.itemId.toString())
-          const temp = Number(time.toString())
+        const item = await getmarketplace?.items(i)
+        if (!item?.sold) {
+          console.log("1");
+          const auction = await getmarketplace?.isAuction(item?.tokenId)
+          console.log("2");
+          const time = await getmarketplace?.getLastTime(item?.itemId)
+          console.log("3");
+          const temp = Number(time?.toString())
           // get uri url from nft contract
-          const provider = new ethers.providers.Web3Provider(window.ethereum)
-          // Set signer
-          const signer = provider.getSigner()
-          const nft = new ethers.Contract(item.nft, NFTAbi.abi,signer)
-          const uri = await nft.tokenURI(item.tokenId)
-          if(uri.slice(uri.length - 4) == "json") {
+          console.log("4");
+          let customHttpProvider = new ethers.providers.JsonRpcProvider("https://ethereum-goerli.publicnode.com");    
+          const nft = new ethers.Contract(item?.nft, NFTAbi?.abi,customHttpProvider)
+          const uri = await nft?.tokenURI(item?.tokenId)
+          if(uri?.slice(uri?.length - 4) == "json") {
            
             const response = await fetch(uri)
-            const metadata = await response.json()
+            const metadata = await response?.json()
           
           const res = Number(50);
-          console.log("json",metadata.image)
           // const img =  `https://ipfs.io/ipfs/${metadata.image.slice(metadata.image.length - 46)}`
           // console.log("img",img)
           items.push({
             time: temp,
             auction: auction,
-            totalPrice: item.price,
-            itemId: item.itemId,
-            seller: item.seller,
-            name: metadata.name,
-            description: metadata.description,
-            image:metadata.image,
+            totalPrice: item?.price,
+            itemId: item?.itemId,
+            seller: item?.seller,
+            name: metadata?.name,
+            description: metadata?.description,
+            image:metadata?.image,
             Royality: res
           })
 
@@ -68,18 +68,18 @@ const Home = ({ marketplace, nft, account }) => {
       
   
           const res = Number(50);
-          console.log("withoutjson",metadata.image)
+          console.log("withoutjson",metadata?.image)
           // const img =  `https://ipfs.io/ipfs/${metadata.image.slice(metadata.image.length - 46)}`
           // console.log("img",img)
           items.push({
             time: temp,
             auction: auction,
-            totalPrice: item.price,
-            itemId: item.itemId,
-            seller: item.seller,
-            name: metadata.name,
-            description: metadata.description,
-            image:metadata.image,
+            totalPrice: item?.price,
+            itemId: item?.itemId,
+            seller: item?.seller,
+            name: metadata?.name,
+            description: metadata?.description,
+            image:metadata?.image,
             Royality: res
           })
 
@@ -95,43 +95,28 @@ const Home = ({ marketplace, nft, account }) => {
     }
   }
 
-  const getChainId = ()=> {
-    const id = Number(window.ethereum.chainId)
-    setChainId(id)
-  }
 
   useEffect(() => {
     loadMarketplaceItems();
   }, [])
 
-  useEffect(() => {
-    getChainId()
-  }, [])
-  // if(chainId == 31337) {
-if(chainId == 5) {
-  if (loading) return (
-    <main style={{ padding: "1rem 0" }}>
-      <h2>Loadings...</h2>
-    </main>
-  )
-}
 
   return (
     <div className="flex justify-center">
-     {( 
-      //  chainId == "31337"
-      chainId == "5"
-      ?
-      <div>
-      {items.length > 0 ?
+ 
+ {loading ? (
+      <main style={{ padding: "1rem 0" }}>
+        <h2>Loading...</h2>
+      </main>
+      ) :
+
+      items.length > 0 ?
         <div className="px-5 container">
           <Row className="mt-5">
             {items.map((item, idx) => (
               <NftBox item={item} idx={idx} setLoading = {setLoad} loading = {load} marketplace={marketplace} account={account} />
             ))}
           </Row>
-
-
         </div>
         : (
           <main style={{ padding: "1rem 0" }}>
@@ -139,10 +124,7 @@ if(chainId == 5) {
           </main>
         )}
         </div>
-    :
-    "Please switch to supported network"
-    )}
-    </div>
-  );
-}
+        );
+      }
+
 export default Home

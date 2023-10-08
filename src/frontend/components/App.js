@@ -26,11 +26,10 @@ function App() {
   const [nft, setNFT] = useState({})
   const [marketplace, setMarketplace] = useState({})
   const [signer, setSigner]=useState();
+  const [getnft, setGetNFT] = useState({})
+  const [getmarketplace, setGetMarketplace] = useState({})
 
-  ethereum.on("accountsChanged", async (account) => {
-    setAccount(account[0]);
-    window.location.reload()
-  })
+
 
   const changeNetwork = async () => {
     try {
@@ -50,9 +49,8 @@ function App() {
       console.log(err.message);
     }
   };
-  window.ethereum && ethereum.on("chainChanged", async () => {
-    window.location.reload();
-  });
+ 
+
 
   const checkIsWalletConnected = async () => {  
     try {
@@ -60,15 +58,38 @@ function App() {
       const accounts = await ethereum.request({ method: "eth_accounts" });
       if (accounts.length) {
         setAccount(accounts[0]);
+        // console.log("Account", accounts[0])
         // Get provider from Metamask
         const provider = new ethers.providers.Web3Provider(window.ethereum)
         // Set signer
         const signer = provider.getSigner()
         loadContracts(signer)
-        setSigner(signer);
       } else {
         console.log("No account Found");
       }
+      
+      ethereum.on("accountsChanged", async (account) => {
+        setAccount(account[0]);
+        window.location.reload()
+      })
+
+      window.ethereum && ethereum.on("chainChanged", async (chainId) => {
+        if (chainId != "0x5") {
+          await ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [
+                  {
+                      chainId: "0x5" //Goerli
+                      // chainId: "0x89", //PolygonMainnet
+                      //chainId: "0xaa36a7", //sepolia
+                      // chainId: "0x1", //Miannet
+                      // chainId: "0x7A69" //localHost TODO
+                  },
+              ],
+          });
+      }
+       
+      });
     } catch (err) {
 
       throw new Error("No ethereum Object");
@@ -94,6 +115,7 @@ function App() {
     window.ethereum.on('chainChanged', (chainId) => {
       window.location.reload();
     })
+  
 
     window.ethereum.on('accountsChanged', async function (accounts) {
       setAccount(accounts[0])
@@ -101,6 +123,7 @@ function App() {
     })
     loadContracts(signer)
   }
+
   const loadContracts = async (signer) => {
     // Get deployed copies of contracts
     const marketplace = new ethers.Contract(MarketplaceAddress.address, MarketplaceAbi.abi, signer)
@@ -110,6 +133,19 @@ function App() {
     setLoading(false)
   }
 
+  const getContracts = async () => {
+    // Get deployed copies of contracts
+    let customHttpProvider = new ethers.providers.JsonRpcProvider("https://ethereum-goerli.publicnode.com");
+    const marketplace = new ethers.Contract(MarketplaceAddress.address, MarketplaceAbi.abi, customHttpProvider)
+    setGetMarketplace(marketplace)
+    const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, customHttpProvider)
+    setGetNFT(nft)
+    setLoading(false)
+  }
+
+  useEffect((()=>{
+    getContracts();
+  }),[account])
 
   return (
     <BrowserRouter>
@@ -126,7 +162,7 @@ function App() {
           ) : (
             <Routes>
               <Route path="/" element={
-                <Home signers={signer} marketplace={marketplace} nft={nft} account={account} />
+                <Home getnft={getnft} getmarketplace={getmarketplace} getContracts={getContracts} signers={signer} marketplace={marketplace} nft={nft} account={account} />
               } />
               <Route path="/create" element={
                 <Create marketplace={marketplace} nft={nft} />
